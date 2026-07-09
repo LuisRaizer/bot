@@ -92,23 +92,20 @@ async function buscarEMandarShrine() {
 // ==========================================
 // 3. ROTA DO DESPERTADOR (CRON-JOB)
 // ==========================================
-app.get('/cron-shrine', async (req, res) => {
+app.get('/cron-shrine', (req, res) => {
   const senhaInformada = req.query.senha;
   const senhaCorreta = process.env.CRON_SECRET;
 
-  // Trava de segurança: se a senha não bater, barra a requisição
   if (!senhaCorreta || senhaInformada !== senhaCorreta) {
     console.log("Tentativa de acesso negada ao /cron-shrine");
     return res.status(401).send("Acesso Negado.");
   }
 
-  console.log("Despertador ativado! Iniciando envio do Shrine...");
-  // Chama a função assíncrona, mas já responde ao cron-job para não dar timeout
-  buscarEMandarShrine(); 
-  res.send("Iniciando rotina do Shrine...");
-});
+  // Responde logo com um texto minúsculo para o cron-job ficar feliz e fechar a conexão
+  res.status(200).send("OK");
 
-// Inicializa o servidor
-app.listen(PORT, () => {
-  console.log('Servidor rodando na porta', PORT);
+  // Executa a busca em segundo plano DEPOIS de já ter respondido ao site
+  setTimeout(() => {
+    buscarEMandarShrine();
+  }, 1000);
 });
