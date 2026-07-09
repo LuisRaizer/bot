@@ -101,11 +101,16 @@ app.get('/cron-shrine', (req, res) => {
     return res.status(401).send("Acesso Negado.");
   }
 
-  // Responde logo com um texto minúsculo para o cron-job ficar feliz e fechar a conexão
+  console.log("Despertador ativado! Respondendo ao cron-job imediatamente...");
+  
   res.status(200).send("OK");
 
-  // Executa a busca em segundo plano DEPOIS de já ter respondido ao site
   setTimeout(() => {
     buscarEMandarShrine();
   }, 1000);
+}); // <-- Certifique-se de que este parêntese e chave estão aqui!
+
+// Inicializa o servidor
+app.listen(PORT, () => {
+  console.log('Servidor rodando na porta', PORT);
 });
