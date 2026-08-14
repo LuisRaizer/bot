@@ -1,0 +1,18 @@
+name: Executar Cron Shrine
+
+on:
+  schedule:
+    # O GitHub Actions usa a hora UTC.
+    # 13:00 no horário de Brasília (UTC-3) corresponde a 16:00 UTC.
+    - cron: '0 16 * * *'
+  
+  # Permite que você execute o bot manualmente pelo site do GitHub para testar quando quiser
+  workflow_dispatch:
+
+jobs:
+  chamar-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar requisição para o Render
+        run: |
+          curl -s -S --max-time 120 "https://bot-28g0.onrender.com/cron-shrine?senha=shrine123senha"
