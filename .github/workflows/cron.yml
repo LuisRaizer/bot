@@ -4,7 +4,7 @@ on:
   schedule:
     # O GitHub Actions usa a hora UTC.
     # 13:00 no horário de Brasília (UTC-3) corresponde a 16:00 UTC.
-    - cron: '0 16 * * *'
+    - cron: '0 16 * * 1'
   
   # Permite que você execute o bot manualmente pelo site do GitHub para testar quando quiser
   workflow_dispatch:
