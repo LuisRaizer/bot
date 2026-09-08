@@ -30,15 +30,21 @@ export async function DiscordRequest(endpoint, options) {
     } catch {
     }
 
-    if (res.status !== 429 || attempt === 2) {
+    const retryAfterFromBody = Number(errorBody?.retry_after);
+    if (
+      res.status !== 429 ||
+      attempt === 2 ||
+      !Number.isFinite(retryAfterFromBody) ||
+      retryAfterFromBody < 0
+    ) {
       const error = new Error(`Discord API ${res.status}: ${JSON.stringify(errorBody)}`);
       error.status = res.status;
       throw error;
     }
 
-    const retryAfter = Number(res.headers.get('retry-after')) || Number(errorBody?.retry_after) || 2 ** attempt;
+    const retryAfter = Math.min(retryAfterFromBody, 30);
     console.warn(`Discord rate limitado; tentando novamente em ${retryAfter}s.`);
-    await new Promise(resolve => setTimeout(resolve, Math.min(retryAfter * 1000, 30000)));
+    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
   }
 }
 
