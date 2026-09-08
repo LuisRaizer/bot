@@ -40,12 +40,21 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 // ==========================================
 // 2. LÓGICA DE BUSCAR E ENVIAR O SHRINE
 // ==========================================
+let shrineRunning = false;
+
 async function buscarEMandarShrine() {
+  if (shrineRunning) {
+    console.warn("Rotina do Shrine já está em execução; chamada ignorada.");
+    return;
+  }
+
+  shrineRunning = true;
   const url = "https://api.nightlight.gg/v1/shrine?pretty=true";
   const channelId = process.env.CHANNEL_ID;
 
   if (!channelId) {
     console.error("Erro Crítico: CHANNEL_ID não configurado.");
+    shrineRunning = false;
     return;
   }
 
@@ -81,15 +90,19 @@ async function buscarEMandarShrine() {
 
   } catch (error) {
     console.error("Erro na rotina do Shrine:", error);
-    // Envia aviso de erro pro Discord para você saber que falhou
-    try {
-      await DiscordRequest(`channels/${channelId}/messages`, {
-        method: 'POST',
-        body: { content: "⚠️ Falha ao buscar o Shrine hoje. Verifique os logs." },
-      });
-    } catch (notificationError) {
-      console.error("Erro ao enviar aviso para o Discord:", notificationError);
+    // Não faça uma segunda chamada ao Discord quando a primeira já foi limitada.
+    if (error.status !== 429) {
+      try {
+        await DiscordRequest(`channels/${channelId}/messages`, {
+          method: 'POST',
+          body: { content: "⚠️ Falha ao buscar o Shrine hoje. Verifique os logs." },
+        });
+      } catch (notificationError) {
+        console.error("Erro ao enviar aviso para o Discord:", notificationError);
+      }
     }
+  } finally {
+    shrineRunning = false;
   }
 }
 

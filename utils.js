@@ -3,19 +3,25 @@ import 'dotenv/config';
 export async function DiscordRequest(endpoint, options) {
   // append endpoint to root API URL
   const url = 'https://discord.com/api/v10/' + endpoint;
-  // Stringify payloads
-  if (options.body) options.body = JSON.stringify(options.body);
-  // Use fetch to make requests
-  const res = await fetch(url, {
+  const requestOptions = {
+    ...options,
     headers: {
       Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
       'Content-Type': 'application/json; charset=UTF-8',
       'User-Agent': 'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
+      ...options.headers,
     },
-    ...options
-  });
-  // throw API errors
-  if (!res.ok) {
+  };
+
+  if (requestOptions.body && typeof requestOptions.body !== 'string') {
+    requestOptions.body = JSON.stringify(requestOptions.body);
+  }
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const res = await fetch(url, requestOptions);
+
+    if (res.ok) return res;
+
     const responseText = await res.text();
     let errorBody = responseText;
 
@@ -24,10 +30,16 @@ export async function DiscordRequest(endpoint, options) {
     } catch {
     }
 
-    throw new Error(`Discord API ${res.status}: ${JSON.stringify(errorBody)}`);
+    if (res.status !== 429 || attempt === 2) {
+      const error = new Error(`Discord API ${res.status}: ${JSON.stringify(errorBody)}`);
+      error.status = res.status;
+      throw error;
+    }
+
+    const retryAfter = Number(res.headers.get('retry-after')) || Number(errorBody?.retry_after) || 2 ** attempt;
+    console.warn(`Discord rate limitado; tentando novamente em ${retryAfter}s.`);
+    await new Promise(resolve => setTimeout(resolve, Math.min(retryAfter * 1000, 30000)));
   }
-  // return original response
-  return res;
 }
 
 export async function InstallGlobalCommands(appId, commands) {
