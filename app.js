@@ -82,10 +82,14 @@ async function buscarEMandarShrine() {
   } catch (error) {
     console.error("Erro na rotina do Shrine:", error);
     // Envia aviso de erro pro Discord para você saber que falhou
-    await DiscordRequest(`channels/${channelId}/messages`, {
-      method: 'POST',
-      body: { content: "⚠️ Falha ao buscar o Shrine hoje. Verifique os logs." },
-    });
+    try {
+      await DiscordRequest(`channels/${channelId}/messages`, {
+        method: 'POST',
+        body: { content: "⚠️ Falha ao buscar o Shrine hoje. Verifique os logs." },
+      });
+    } catch (notificationError) {
+      console.error("Erro ao enviar aviso para o Discord:", notificationError);
+    }
   }
 }
 
