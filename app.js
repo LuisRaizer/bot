@@ -8,8 +8,22 @@ import {
 } from 'discord-interactions';
 import { getRandomEmoji, DiscordRequest } from './utils.js';
 
+// ==========================================
+// VALIDAR VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS
+// ==========================================
+const requiredEnvVars = ['PUBLIC_KEY', 'DISCORD_TOKEN', 'CHANNEL_ID', 'CRON_SECRET'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error(`❌ Erro Crítico: Variáveis de ambiente ausentes: ${missingVars.join(', ')}`);
+  console.error('Defina estas variáveis no painel do Railway antes de continuar.');
+  process.exit(1);
+}
+
+console.log('✅ Todas as variáveis de ambiente obrigatórias estão definidas.');
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // ==========================================
 // 1. ENDPOINT PADRÃO DO DISCORD
@@ -85,10 +99,10 @@ async function buscarEMandarShrine() {
       method: 'POST',
       body: { content: textoPopup },
     });
-    console.log("Shrine enviado com sucesso!");
+    console.log("✅ Shrine enviado com sucesso!");
 
   } catch (error) {
-    console.error("Erro na rotina do Shrine:", error);
+    console.error("❌ Erro na rotina do Shrine:", error);
 
     // Evita tentar mandar mensagem de erro caso o próprio envio ao Discord esteja bloqueado (429)
     if (error.status !== 429) {
@@ -136,5 +150,6 @@ app.get('/', (req, res) => {
 
 // Inicializa o servidor escutando em todas as interfaces de rede (0.0.0.0)
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('Servidor rodando na porta', PORT);
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
 });
+
