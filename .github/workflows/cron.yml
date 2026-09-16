@@ -10,8 +10,8 @@ jobs:
   chamar-bot:
     runs-on: ubuntu-latest
     steps:
-      - name: Enviar requisição para o Render
+      - name: Enviar requisição para o Railway
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl -s -S --max-time 120 "https://bot-28g0.onrender.com/cron-shrine?senha=${CRON_SECRET}"
+          curl -s -S --max-time 120 "https://bot-production-2559.up.railway.app/cron-shrine?senha=${CRON_SECRET}"
