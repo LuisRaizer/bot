@@ -4,7 +4,6 @@ import {
   InteractionResponseFlags,
   InteractionResponseType,
   InteractionType,
-  MessageComponentTypes,
   verifyKeyMiddleware,
 } from 'discord-interactions';
 import { getRandomEmoji, DiscordRequest } from './utils.js';
@@ -90,7 +89,8 @@ async function buscarEMandarShrine() {
 
   } catch (error) {
     console.error("Erro na rotina do Shrine:", error);
-    // Não faça uma segunda chamada ao Discord quando a primeira já foi limitada.
+
+    // Evita tentar mandar mensagem de erro caso o próprio envio ao Discord esteja bloqueado (429)
     if (error.status !== 429) {
       try {
         await DiscordRequest(`channels/${channelId}/messages`, {
@@ -124,8 +124,8 @@ app.get('/cron-shrine', (req, res) => {
 
   setTimeout(() => {
     buscarEMandarShrine();
-  }, 1000);
-}); // <-- Certifique-se de que este parêntese e chave estão aqui!
+  }, 3000);
+});
 
 // Inicializa o servidor
 app.listen(PORT, () => {

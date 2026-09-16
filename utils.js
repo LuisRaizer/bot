@@ -1,14 +1,13 @@
 import 'dotenv/config';
 
 export async function DiscordRequest(endpoint, options) {
-  // append endpoint to root API URL
   const url = 'https://discord.com/api/v10/' + endpoint;
   const requestOptions = {
     ...options,
     headers: {
       Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
       'Content-Type': 'application/json; charset=UTF-8',
-      'User-Agent': 'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
+      'User-Agent': 'DiscordBot (MeuBotShrine, 1.0.0)',
       ...options.headers,
     },
   };
@@ -30,37 +29,39 @@ export async function DiscordRequest(endpoint, options) {
     } catch {
     }
 
-    const retryAfterFromBody = Number(errorBody?.retry_after);
+    let retryAfterFromBody = Number(errorBody?.retry_after);
+
+    if (res.status === 429 && !Number.isFinite(retryAfterFromBody)) {
+      retryAfterFromBody = 5;
+    }
+
     if (
       res.status !== 429 ||
       attempt === 2 ||
       !Number.isFinite(retryAfterFromBody) ||
       retryAfterFromBody < 0
     ) {
-      const error = new Error(`Discord API ${res.status}: ${JSON.stringify(errorBody)}`);
+      const error = new Error(`Discord API ${res.status}: ${typeof errorBody === 'object' ? JSON.stringify(errorBody) : errorBody}`);
       error.status = res.status;
       throw error;
     }
 
     const retryAfter = Math.min(retryAfterFromBody, 30);
-    console.warn(`Discord rate limitado; tentando novamente em ${retryAfter}s.`);
+    console.warn(`Discord rate limitado; tentando novamente em ${retryAfter}s (Tentativa ${attempt + 1}/3)...`);
     await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
   }
 }
 
 export async function InstallGlobalCommands(appId, commands) {
-  // API endpoint to overwrite global commands
   const endpoint = `applications/${appId}/commands`;
 
   try {
-    // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
     await DiscordRequest(endpoint, { method: 'PUT', body: commands });
   } catch (err) {
     console.error(err);
   }
 }
 
-// Simple method that returns a random emoji from list
 export function getRandomEmoji() {
   const emojiList = ['😭','😄','😌','🤓','😎','😤','🤖','😶‍🌫️','🌏','📸','💿','👋','🌊','✨'];
   return emojiList[Math.floor(Math.random() * emojiList.length)];
