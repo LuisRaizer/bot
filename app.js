@@ -127,6 +127,18 @@ app.get('/cron-shrine', (req, res) => {
   }, 3000);
 });
 
+// ==========================================
+// 4. ROTA RAIZ (HEALTHCHECK DA RAILWAY)
+// ==========================================
+app.get('/', (req, res) => {
+  res.status(200).send('Bot Online');
+});
+
+// Inicializa o servidor escutando em todas as interfaces de rede (0.0.0.0)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('Servidor rodando na porta', PORT);
+});
+
 // Inicializa o servidor
 app.listen(PORT, () => {
   console.log('Servidor rodando na porta', PORT);
