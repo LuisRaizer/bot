@@ -14,4 +14,4 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl -s -S --max-time 120 "https://oyi7zrthwm.apps.bot-hosting.cloud/cron-shrine?senha=${CRON_SECRET}"
+          curl -s -S --max-time 120 "https://oy7zrthwm.apps.bot-hosting.cloud/cron-shrine?senha=${CRON_SECRET}"
