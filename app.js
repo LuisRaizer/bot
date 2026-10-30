@@ -23,7 +23,7 @@ if (missingVars.length > 0) {
 console.log('✅ Todas as variáveis de ambiente obrigatórias estão definidas.');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.SERVER_PORT || process.env.PORT || 8080;
 
 // ==========================================
 // 1. ENDPOINT PADRÃO DO DISCORD
